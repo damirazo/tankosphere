@@ -1,9 +1,43 @@
 (function () {
 
+    // Высота сцены
+    var sceneHeight = 700;
+    // Ширина сцены
+    var sceneWidth = 700;
+    // Размер корпуса танка
+    var tankSize = 20;
+    // Урон орудия танка по умолчанию
+    var defaultPower = 30;
+    // Максимально возможный урон от орудия танка
+    var maxPower = 50;
+    // Урон от орудия танка противника по умолчанию
+    var enemyDefaultPower = 10;
+    // Скорость перемещения танка по умолчанию
+    var defaultSpeed = 3;
+    // Максимально возможная скорость перемещения танка
+    var maxSpeed = 10;
+    // Скорость перемещения танка противника по умолчанию
+    var enemyDefaultSpeed = 2;
+    // Вероятность того, что противник произведет выстрел в процентах на тик (если у него уже прошла перезарядка орудия)
+    var enemyShootChance = 0.1;
+    // Шанс на появление бонуса в процентах на тик
+    var bonusSpawnChance = 1;
+    // Время перезарядки орудия в тиках
+    var weaponReloadTime = 200;
+    // Количество здоровья по умолчанию
+    var maxHP = 100;
+    // Количество противников на карте
+    var enemyCount = 3;
+    // Значение бонуса урона
+    var bonusPower = 5;
+    // Значение бонуса скорости
+    var bonusSpeed = 1;
 
 
     // Объект полотна
     var canvas = document.getElementById('canvas');
+    canvas.width = sceneWidth;
+    canvas.height = sceneHeight;
     // Объект 2d контекста
     var context = canvas.getContext('2d');
     // Перечисление кодов клавиш
@@ -79,11 +113,11 @@
         self.render = function () {
             self.tickCount += 1;
             // Очистка сцены
-            self.ctx.clearRect(0, 0, 700, 700);
+            self.ctx.clearRect(0, 0, sceneWidth, sceneHeight);
 
             if (self.bonusCount == 0) {
-                var bonusChance = randomNumber(0, 100);
-                if (bonusChance <= 1) {
+                var bonusChance = randomNumber(0, 1000);
+                if (bonusChance <= bonusSpawnChance * 10) {
                     self.addBonus();
                 }
             }
@@ -104,7 +138,7 @@
          */
         self.addBonus = function() {
             var type = randomNumber(1, 4);
-            var bonus = new Bonus(randomNumber(0, 700), randomNumber(0, 700), type);
+            var bonus = new Bonus(randomNumber(0, sceneWidth), randomNumber(0, sceneHeight), type);
             self.addObject(bonus);
             self.bonusCount += 1;
             self.currentBonus = bonus;
@@ -152,7 +186,7 @@
                 window.requestAnimationFrame(self.gameLoop);
             } else {
                 self.ctx.fillStyle = self.layerColor;
-                self.ctx.fillRect(0, 0, 700, 700);
+                self.ctx.fillRect(0, 0, sceneWidth, sceneHeight);
             }
         };
 
@@ -197,30 +231,26 @@
         // Мишень для орудия
         self.target = target;
         // Скорость передвижения персонажа (за тик)
-        self.speed = options.speed || 3;
-        // Максимальная скорость танка
-        self.maxSpeed = 10;
+        self.speed = options.speed || defaultSpeed;
         // Размер корпуса персонажа
-        self.size = options.size || 20;
+        self.size = options.size || tankSize;
         // Время последнего выстрела
         self.lastFireTime = 0;
         // Время перезарядки оружия (в тиках)
-        self.weaponReloadTime = options.weaponReloadTime || 200;
+        self.weaponReloadTime = options.weaponReloadTime || weaponReloadTime;
         // Кастомная логика сущности. Функция, вызываемая на каждом тике.
         // Получает на вход 3 параметра - объект сущности, объект сцены и объект 2d контекста.
         self.customLogic = options.customLogic || null;
         // Цвет корпуса
         self.color = color || '#00cc00';
         // Максимальное количество здоровья
-        self.maxHP = options.maxHP || 100;
+        self.maxHP = options.maxHP || maxHP;
         // Текущее количество здоровья
         self.currentHP = self.maxHP;
         // Время последнего обновления объекта
         self.lastUpdate = 0;
         // Сила урона орудия танка
-        self.power = options.power || 30;
-        // Максимальная сила урона орудия
-        self.maxPower = 50;
+        self.power = options.power || defaultPower;
 
         /**
          * Рендер персонажа
@@ -464,7 +494,7 @@
         // Пройденное снарядом расстояние
         self.distance = 0;
         // Мощность наносимого снарядом урона
-        self.power = power || 30;
+        self.power = power;
         // Объект, выпустивший снаряд
         self.owner = owner;
 
@@ -478,7 +508,7 @@
             self.distance += self.speed;
 
             // Если снаряд вышел за пределы сцены, то уничтожаем его
-            if (self.x <= 0 || self.x >= 700 || self.y <= 0 || self.y >= 700) {
+            if (self.x <= 0 || self.x >= sceneWidth || self.y <= 0 || self.y >= sceneHeight) {
                 scene.destroyById(self.id);
             }
 
@@ -563,23 +593,23 @@
             switch (self.type) {
                 // Бонус Силы - повышает урон на 5
                 case BonusType.POWER:
-                    if (picker.power + 5 < picker.maxPower) {
-                        picker.power += 5;
+                    if (picker.power + bonusPower < maxPower) {
+                        picker.power += bonusPower;
                     } else {
-                        picker.power = picker.maxPower;
+                        picker.power = maxPower;
                     }
                     break;
                 // Бонус Скорости - повышает скорость на 1
                 case BonusType.SPEED:
-                    if (picker.speed + 1 < picker.maxSpeed) {
-                        picker.speed += 1;
+                    if (picker.speed + bonusSpeed < maxSpeed) {
+                        picker.speed += bonusSpeed;
                     } else {
-                        picker.speed = picker.maxSpeed;
+                        picker.speed = maxSpeed;
                     }
                     break;
                 // Бонус Здоровья - восстанавливает здоровье
                 case BonusType.HP:
-                    picker.currentHP = player.maxHP;
+                    picker.currentHP = picker.maxHP;
             }
         };
     }
@@ -596,7 +626,7 @@
             case Key.D:
             case Key.ARROW_RIGHT:
                 if (player.checkCollision(scene, Direction.RIGHT)) {
-                    (player.x + player.size < 700) ? player.x += player.speed : player.x = 700 - player.size;
+                    (player.x + player.size < sceneWidth) ? player.x += player.speed : player.x = sceneHeight - player.size;
                 }
                 break;
             // Перемещение влево
@@ -610,7 +640,7 @@
             case Key.S:
             case Key.ARROW_DOWN:
                 if (player.checkCollision(scene, Direction.DOWN)) {
-                    (player.y + player.size < 700) ? player.y += player.speed : player.y = 700 - player.size;
+                    (player.y + player.size < sceneWidth) ? player.y += player.speed : player.y = sceneHeight - player.size;
                 }
                 break;
             // Перемещение вверх
@@ -700,7 +730,7 @@
         }
         // Если у персонажа нет цели или он достиг ее, то даем ему новую цель
         else if (obj.targetPosition === undefined || (obj.x == obj.targetPosition.x && obj.y == obj.targetPosition.y)) {
-            obj.targetPosition = {x: randomNumber(0, 700), y: randomNumber(0, 700)};
+            obj.targetPosition = {x: randomNumber(0, sceneWidth), y: randomNumber(0, sceneHeight)};
         }
 
         // Обработка перемещения по оси X
@@ -720,7 +750,7 @@
         // Рассчитываем вероятность произвести выстрел
         var hasFire = randomNumber(0, 1000);
         // Производим выстрел с шансом 0.1% на тик, только если у нас прошла задержка перед предыдущим выстрелом
-        if (hasFire <= 1 && (obj.lastFireTime == 0 || obj.lastFireTime + obj.weaponReloadTime <= scene.tickCount)) {
+        if (hasFire <= enemyShootChance * 10 && (obj.lastFireTime == 0 || obj.lastFireTime + obj.weaponReloadTime <= scene.tickCount)) {
             obj.fire(scene);
         }
 
@@ -738,13 +768,13 @@
     scene.addObject(player);
 
     // Добавляем противников
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < enemyCount; i++) {
         var enemy = new Tank(
-            randomNumber(player.size, 700 - player.size),
-            randomNumber(player.size, 700 - player.size),
+            randomNumber(player.size, sceneWidth - player.size),
+            randomNumber(player.size, sceneHeight - player.size),
             player,
             '#cc43ae',
-            {customLogic: enemyLogic, power: 20, speed: 2}
+            {customLogic: enemyLogic, power: enemyDefaultPower, speed: enemyDefaultSpeed}
         );
         scene.addObject(enemy);
         scene.tankCount += 1;

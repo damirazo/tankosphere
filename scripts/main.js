@@ -739,9 +739,8 @@
         } else if (obj.x > obj.targetPosition.x) {
             obj.x = (obj.x - obj.speed >= obj.targetPosition.x) ? obj.x -= obj.speed : obj.targetPosition.x;
         }
-
         // Обработка перемещения по оси Y
-        if (obj.y < obj.targetPosition.y) {
+        else if (obj.y < obj.targetPosition.y) {
             obj.y = (obj.y + obj.speed <= obj.targetPosition.y) ? obj.y += obj.speed : obj.targetPosition.y;
         } else if (obj.y > obj.targetPosition.y) {
             obj.y = (obj.y - obj.speed >= obj.targetPosition.y) ? obj.y -= obj.speed : obj.targetPosition.y;

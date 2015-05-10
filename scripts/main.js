@@ -610,6 +610,7 @@
                 // Бонус Здоровья - восстанавливает здоровье
                 case BonusType.HP:
                     picker.currentHP = picker.maxHP;
+                    break;
             }
         };
     }

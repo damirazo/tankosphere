@@ -17,9 +17,9 @@
     // Максимально возможная скорость перемещения танка
     var maxSpeed = 10;
     // Скорость перемещения танка противника по умолчанию
-    var enemyDefaultSpeed = 2;
+    var enemyDefaultSpeed = 3;
     // Вероятность того, что противник произведет выстрел в процентах на тик (если у него уже прошла перезарядка орудия)
-    var enemyShootChance = 0.1;
+    var enemyShootChance = 0.3;
     // Шанс на появление бонуса в процентах на тик
     var bonusSpawnChance = 1;
     // Время перезарядки орудия в тиках
@@ -618,7 +618,36 @@
      * Обработка событий нажатия клавиш
      * @param event
      */
-    document.onkeydown = function(event) {
+    document.onkeydown = movePlayer;
+    document.onkeyup = movePlayer;
+
+    /**
+     * Обработка нажатий клавиш мыши
+     * @param event
+     */
+    canvas.onmousedown = function(event) {
+        switch (event.which) {
+            // Выстрел из основного орудия
+            case Mouse.LEFT:
+                player.fire(scene);
+                break;
+        }
+    };
+
+    /**
+     * Обработка события перемещения курсора
+     * @param event
+     */
+    canvas.onmousemove = function(event) {
+        mousePosition.x = event.pageX - this.offsetLeft;
+        mousePosition.y = event.pageY - this.offsetTop;
+    };
+
+    /**
+     * Перемещение персонажа
+     * @param event
+     */
+    function movePlayer(event) {
         var keyCode = event.keyCode;
 
         switch (keyCode) {
@@ -655,29 +684,7 @@
                 player.fire(scene);
                 break;
         }
-    };
-
-    /**
-     * Обработка нажатий клавиш мыши
-     * @param event
-     */
-    canvas.onmousedown = function(event) {
-        switch (event.which) {
-            // Выстрел из основного орудия
-            case Mouse.LEFT:
-                player.fire(scene);
-                break;
-        }
-    };
-
-    /**
-     * Обработка события перемещения курсора
-     * @param event
-     */
-    canvas.onmousemove = function(event) {
-        mousePosition.x = event.pageX - this.offsetLeft;
-        mousePosition.y = event.pageY - this.offsetTop;
-    };
+    }
 
     /**
      * Случайное число в заданном диапазоне
